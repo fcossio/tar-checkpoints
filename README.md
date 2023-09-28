@@ -5,7 +5,7 @@ re-start the experiment from any point in time (maybe with different hyperparams
 Training usually happens on a server from where the checkpoints need to be recovered.
 Given that copying many files is slower than copying one single big file,
 this utility allows me to save all the checkpoints for a given experiment in a single 
-tar file. As well as to circumvent the file-limit quota on the cluster.
+tar file, as well as to circumvent the file-limit quota on the cluster.
 On top of that, it will write the tar file in a non-blocking fashion so that
 it has minimal impact on training time.
 

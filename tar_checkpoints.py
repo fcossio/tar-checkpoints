@@ -6,9 +6,11 @@ import logging
 
 # logging.basicConfig(level="DEBUG") # no other way to see logs.
 
+
 class Task(TypedDict):
     epoch: int
     files: List[str]
+
 
 def add_files(tarf: tarfile.TarFile, epoch: int, files: List[str]) -> None:
     """Append files to a tar file."""
@@ -34,10 +36,10 @@ def add_files_daemon(queue: JoinableQueue, tar_fp: str) -> None:
         while True:
             # get new files to move to the tarfile, block until a new task is available.
             task = queue.get(True)
-            if task == "break": # terminal condition
+            if task == "break":  # terminal condition
                 break  # exit the context and close the file
             add_files(tarf, **task)
-            queue.task_done() # mark the task as done
+            queue.task_done()  # mark the task as done
     queue.task_done()  # finish the queue which will then kill the process.
 
 
@@ -88,9 +90,7 @@ class TarCheckpoints:
     def __enter__(self):
         logging.debug("Starting TarCheckpoints queue and daemon")
         self.queue = JoinableQueue()
-        self.daemon = Process(
-            target=add_files_daemon, args=(self.queue, self.tar_fp)
-        )
+        self.daemon = Process(target=add_files_daemon, args=(self.queue, self.tar_fp))
         self.daemon.start()
         return self.tar_files
 
@@ -111,7 +111,7 @@ class TarCheckpoints:
 
     def tar_files(self, epoch: int, filepaths: List[str]) -> None:
         # TODO: what happens if I don't want a flat structure under my epoch folder?
-        
+
         """Add a new set of files to the tar file. This method is non-blocking and will
          submit the task to a queue that the daemon will process in order.
 
@@ -124,7 +124,9 @@ class TarCheckpoints:
             Exception: When something is wrong and the child process has died.
         """
         if self.daemon == None:
-            raise Exception("This method can only be used inside a TarCheckpoints context.")
+            raise Exception(
+                "This method can only be used inside a TarCheckpoints context."
+            )
         if not self.daemon.is_alive():
             raise Exception
         task: Task = {"epoch": epoch, "files": filepaths}
@@ -134,7 +136,7 @@ class TarCheckpoints:
 if __name__ == "__main__":
 
     # This is an example of how it all works.
-    
+
     tar_fp = "my_tar_file.tar"
     with TarCheckpoints(tar_fp) as tar_files:
         for i in range(100):
